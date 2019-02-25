@@ -1,0 +1,171 @@
+<div class="container-fluid dashboard_body">
+  <div class="dashboard_wrappertop"><div class="dashboradtoplogo"><img src="../../assets/images/logo.png"></div></div>
+  <div class="row rowmaindiv">
+    <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12 dashboard_left">
+      <app-adminleft></app-adminleft>
+    </div>
+    <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12 dashboard_right">
+      <div class="dashboard_right_wrapper">
+        <div class="dashboard1_div1 adminlisttable">
+          <h4>All Signups For Competition</h4>
+          <div class="tablediv">
+            <div class="tabletopbar">
+              <div class="pull-right">
+                <form id="filter">
+                  <ul>
+                    <li>
+                      <div>
+                        <div class="input-group col-md-12">
+                          <input style="border-radius: 0;" placeholder="Search By DateRange" name="searchDate" autocomplete="off" class="form-control input-lg"
+                                 [(ngModel)]="searchText5"
+                                 [selectMode]="'range'"
+                                 [owlDateTimeTrigger]="dtRange1" [owlDateTime]="dtRange1">
+                          <owl-date-time [pickerType]="'calendar'" #dtRange1></owl-date-time>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="input-group col-md-12">
+                          <select name="searchText2" [(ngModel)]="searchText4" class="form-control input-lg">
+                            <option value="">Search By Status</option>
+                            <option value="">All Status</option>
+                            <option value="0">Pending</option>
+                            <option value="1">Approved</option>
+                            <option value="2">Declined</option>
+                          </select>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="input-group col-md-12">
+                          <select name="searchText2" [(ngModel)]="searchText3" class="form-control input-lg">
+                            <option value="">Search By Genre</option>
+                            <option value="">All Genre</option>
+                            <option *ngFor="let item of genrelist" value="{{item._id}}">{{item.genrename}}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="input-group col-md-12">
+                          <select name="searchText2" [(ngModel)]="searchText2" class="form-control input-lg">
+                            <option value="" style="text-transform: uppercase;">SEARCH BY COMPETITION</option>
+                            <option value="" style="text-transform: uppercase;">ALL COMPETITION</option>
+                            <option *ngFor="let item of competitionlist" value="{{item._id}}">{{item.competitionname}}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="input-group col-md-12">
+                          <input type="text" class="form-control input-lg" placeholder="Search By Name/Email" autocomplete="off" [(ngModel)]="searchText" name="searchText" />
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </form>
+              </div>
+            </div>
+            <table>
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Competition</th>
+                <th>Genre</th>
+                <th>Added on</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let item of userlist | compuserfilter : searchText : 'name' | compuserfilter : searchText2 : 'competition' | compuserfilter : searchText3 : 'genre' | compuserfilter : searchText4 : 'status' | oreder2 : searchText5 | paginate: { itemsPerPage: 10, currentPage: p }">
+                <td>{{item.name}}</td>
+                <td>{{item.email}}</td>
+                <td>{{item.competitionname}}</td>
+                <td>{{item.genrename}}</td>
+                <td style="min-width: 95px;">{{(item.added_time*1000) | date :  "MM/dd/yyyy hh:mmaa"}}</td>
+                <td data-label="Status">
+                  <span *ngIf="!item.isStatusClicked" [ngClass]="(item.status == 1 ? 'statusactive' : (item.status == 2 ? 'statusinactive' : 'statuspendinng'))" (click)="isClickedFunc(item)" style="cursor: pointer;">{{getStatusName(item.status)}}</span>
+                  <span *ngIf="item.isStatusClicked">
+                    <select name="status" (change)="editInlineField($event,item,item.status)" (blur)="selectblur(item)">
+                      <option value="1" [selected]="item.status == 1">Approved</option>
+                      <option value="2" [selected]="item.status == 2">Declined</option>
+                      <option value="0" [selected]="item.status == 0" *ngIf="item.status == 0">Pending</option>
+                    </select>
+                  </span>
+                </td>
+                <td data-label="Action">
+                  <a href="javascript:void(0)" class="loginbtn2" [hidden]="hideBtn(item)" (click)="viewassets(template,item)" style="font-size: 14px; padding: 5px 10px;"><span>View Assets</span></a>
+                </td>
+              </tr>
+              <tr *ngIf="!(userlist | compuserfilter : searchText : 'name' | compuserfilter : searchText2 : 'competition' | compuserfilter : searchText3 : 'genre' | compuserfilter : searchText4 : 'status' | oreder2 : searchText5).length && !loadinglist"><td colspan="25" style="color: #ee680f; padding: 16px; text-align: center;">No Record Found</td></tr>
+              <tr *ngIf="loadinglist"><td colspan="25" style="color: #ee680f; padding: 16px; text-align: center;"><img src="../../assets/images/loader.gif" style="width: 100px;"></td></tr>
+              </tbody>
+            </table>
+            <pagination-controls  *ngIf="(userlist | compuserfilter : searchText : 'name' | compuserfilter : searchText2 : 'competition' | compuserfilter : searchText3 : 'genre' | compuserfilter : searchText4 : 'status' | oreder2 : searchText5).length" (pageChange)="p = $event" maxSize="9" autoHide="true" responsive="true" class="my-pagination"></pagination-controls>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+</div>
+
+<ng-template #template>
+  <div class="modal-body text-center modalcls modalclsnew">
+    <button (click)="close()" class="close" type="button">×</button>
+    <div>
+      <h2>Assets</h2>
+      <div *ngIf="selecteduser.backstorytype !='' && selecteduser.backstoryval !=''" class="uploadimg">
+        <label>Back Story</label>
+        <div class="uploadvideo_box" *ngIf="selecteduser.backstorytype == 'Youtube'">
+          <div class="uploadvideo_boxcon"   >   <iframe class="embed-responsive-item" [src]="iframevideourl" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="width: 50vw; height: 28.13vw"></iframe></div>
+        </div>
+        <div class="uploadvideo_box" *ngIf="selecteduser.backstorytype == 'Vimeo'">
+          <div class="uploadvideo_boxcon"  >  <iframe class="embed-responsive-item" [src]="iframevideourl" webkitallowfullscreen mozallowfullscreen allowfullscreen style="width: 50vw; height: 28.13vw"></iframe></div>
+        </div>
+        <div class="uploadvideo_box" *ngIf="selecteduser.backstorytype == 'Upload'">
+            <div class="uploadvideo_boxcon">   <video  style="width: 50vw;" controls>
+            <source [src]="iframevideourl" type="video/mp4">
+          </video>
+            </div>
+
+
+
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div *ngIf="selecteduser.isImages" class="uploadimg">
+        <label>Image</label>
+        <div  class="uploadimg_box" *ngFor="let item of selecteduser.images">
+          <div class="uploadimg_boxcon"> <img src="{{fileurl}}{{imageuploadfolder}}{{item}}"></div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div *ngIf="selecteduser.isVideos" class="uploadimg">
+        <label>Video</label>
+        <div  class="uploadvideo_box" *ngFor="let item of selecteduser.videos">
+          <div class="uploadvideo_boxcon">
+            <video style="width: 50vw;" controls>
+              <source [src]="getPath(item,videouploadfolder)" type="video/mp4">
+            </video>
+          </div>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div *ngIf="selecteduser.isMusics" class="uploadimg">
+        <label>Music</label>
+        <div *ngFor="let item of selecteduser.musics">
+          <audio style="width: 50vw;" controls>
+            <source [src]="getPath(item,musicuploadfolder)" type="audio/mpeg">
+          </audio>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
